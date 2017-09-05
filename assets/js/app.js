@@ -1,5 +1,11 @@
 $(document).ready(function() {
 
+    // call jQuery sortable
+    $( function() {
+        $( ".sortable" ).sortable();
+        $( ".sortable" ).disableSelection();
+    });
+    
   // Initialize Firebase
     var config = {
         apiKey: "AIzaSyClg_9CBuyBx1zfG00NvXisqPkV1sSybZ4",
@@ -42,54 +48,47 @@ $(document).ready(function() {
             trainTime: trainTime,
             trainFrequency: trainFrequency
         }); // database set
-
+        printToPage();
     }); // submit on click
 
-    // Firebase Watcher
-    // database.ref().on('value', function(snapshot){
-    //     console.log(snapshot.val());
-    //     console.log(snapshot.child.key);
-    //     console.log(snapshot.val().trainDestination);
-    //     console.log(snapshot.val().trainTime);
-    //     console.log(snapshot.val().trainFrequency);
-    var ref = firebase.database().ref();
+    function printToPage() {
+        $('#train-schedule-area').empty();
+        var ref = firebase.database().ref();
+        var query = firebase.database().ref().orderByKey();
+        query.once("value")
+        .then(function(snapshot) {
+            snapshot.forEach(function(childSnapshot) {
+            // key will be "ada" the first time and "alan" the second time
+            var key = childSnapshot.key;
+            console.log(key);
+            // childData will be the actual contents of the child
+            var childData = childSnapshot.val();
+            console.log(childData);
 
-    var query = firebase.database().ref().orderByKey();
-    query.once("value")
-      .then(function(snapshot) {
-        snapshot.forEach(function(childSnapshot) {
-          // key will be "ada" the first time and "alan" the second time
-          var key = childSnapshot.key;
-          console.log(key);
-          // childData will be the actual contents of the child
-          var childData = childSnapshot.val();
-          console.log(childData);
+            console.log("train dest: " + childData.trainDestination);
+            console.log("train name: " + childData.trainName);
+            console.log("train time: " + childData.trainTime);
+            console.log("train Frequency: " + childData.trainFrequency);
 
-          console.log("train dest: " + childData.trainDestination);
-          console.log("train name: " + childData.trainName);
-          console.log("train time: " + childData.trainTime);
-          console.log("train Frequency: " + childData.trainFrequency);
+                var newTrain = $('<tr>');
+                var childName = $("<td>").text(childData.trainName);
+                var childDestination = $("<td>").text(childData.trainDestination);
+                var childTime = $("<td>").text(childData.trainTime);
+                var childFrequency = $("<td>").text(childData.trainFrequency);
 
-            var newTrain = $('<tr>');
-            var childName = $("<td>").text(childData.trainName);
-            var childDestination = $("<td>").text(childData.trainDestination);
-            var childTime = $("<td>").text(childData.trainTime);
-            var childFrequency = $("<td>").text(childData.trainFrequency);
+                newTrain.append(childName).append(childDestination).append(childFrequency).append(childTime);
 
-            newTrain.append(childName).append(childDestination).append(childFrequency).append(childTime);
+                $('#train-schedule-area').append(newTrain);
 
-            $('#train-schedule-area').append(newTrain);
-
-      });
-    
-
-        // Handle the errors
-    }, function(errorObject) {
-        console.log("Errors handled: " + errorObject.code);
-       
-    });// Firebase Watcher
-
-
+        });
+        
+            // Handle the errors
+        }, function(errorObject) {
+            console.log("Errors handled: " + errorObject.code);
+        
+        });// Firebase Watcher
+    }// print to page
+    printToPage();
 
 
 }); // document ready 
